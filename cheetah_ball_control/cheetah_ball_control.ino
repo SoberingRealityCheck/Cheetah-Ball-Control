@@ -133,6 +133,7 @@ void loop() {
 
   // Determine Motor State
   if (RobotState == ROBOT_STATE_STATIONARY) {
+    MotorPowerState = MOTOR_POWER_OFF;
     MotorL1State = MOTOR_STATE_STATIONARY;
     MotorR1State = MOTOR_STATE_STATIONARY;
     MotorL2State = MOTOR_STATE_STATIONARY;
@@ -167,12 +168,11 @@ void loop() {
   } 
 
   // translate motor power state into relay command
-  // if (MotorPowerState == MOTOR_POWER_OFF) {
-  //   digitalWrite(MotorPowerPin, LOW);
-  // }
-  // if (MotorPowerState == MOTOR_POWER_ON) {
-  //   digitalWrite(MotorPowerPin, HIGH);
-  // }
+  if (MotorPowerState == MOTOR_POWER_OFF) {
+    digitalWrite(MotorPowerPin, LOW);
+  } else if (MotorPowerState == MOTOR_POWER_ON) {
+    digitalWrite(MotorPowerPin, HIGH);
+  }
 
   // translate motor state values into actual relay commands
   // these are individual commands instead of one generalized function because 
@@ -235,11 +235,11 @@ void loop() {
   }
 
   // big serial.print step for debugging and graphing
-  // Serial.print("ThrottleState:");
-  // Serial.print(ThrottleState);
-  // Serial.print(",");
-  // Serial.print("LateralState:");
-  // Serial.print(LateralState);
+  Serial.print("MotorPowerState:");
+  Serial.print(MotorPowerState);
+  Serial.print(",");
+  Serial.print("MotorR1State:");
+  Serial.print(MotorR1State);
   // Serial.print("ThrottlePin:");
   // Serial.print(analogRead(ThrottlePin));
   // Serial.print(",");
@@ -276,7 +276,7 @@ void loop() {
   // Serial.print("LateralInterpretedState:");
   // Serial.print(GetPWM(LateralPin));
   
-  // Serial.println("");
+  Serial.println("");
   
   //delay a bit
   // delay(11);
