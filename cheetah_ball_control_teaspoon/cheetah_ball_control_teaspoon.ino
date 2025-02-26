@@ -1,7 +1,11 @@
+#define NONE 0
+#define GRAPH 1
+#define PRINT_STATE 2
+const int DEBUG_MODE = PRINT_STATE;
+
 // these should match the pins the Lateral and throttle are connected to from the RC Reciever.
 const int LateralPin = 10;
 const int ThrottlePin = 11;
-
 
 // these should match the output pins to the L293 H-Bridge Motor Driver.
 const int ENA_L_Pin = 9;
@@ -19,26 +23,24 @@ unsigned long LateralPulse;
 int ThrottleMappedPulse;
 int LateralMappedPulse;
 
-// these variables will change depending on the forwards-backwards / left-right direction of the command
-int ThrottleInterpretedState;
-int LateralInterpretedState;
-
-
 // determine the total strength of the PWM signals
 int ThrottleMotivation = 0;
 int LateralMotivation = 0;
 
+
+// these variables will change depending on the forwards-backwards / left-right direction of the command
+int ThrottleInterpretedState;
+int LateralInterpretedState;
+
 // robot current state (see #define for value meaning)
 int RobotState;
 
-// determine the backwards / forwards state of the motors
-int MotorLState = 0;
-int MotorRState = 0;
-
-
-// determine the output speed of the motors to be sent to the ENA_L and ENA_R pins
-int MotorLSpeed = 0;
-int MotorRSpeed = 0;
+// state variable definitions
+#define STATIONARY 0
+#define LEFT 1
+#define RIGHT 2
+#define FORWARDS 3
+#define BACKWARDS 4
 
 const int MIN_PULSE = 900UL;
 const int MAX_PULSE = 2100UL;
@@ -68,11 +70,6 @@ void setup() {
   Serial.begin(9600);
 }
 
-#define STATIONARY 0
-#define LEFT 1
-#define RIGHT 2
-#define FORWARDS 3
-#define BACKWARDS 4
 
 byte GetPWM(byte pin)
 {
@@ -104,33 +101,27 @@ void loop() {
 
   // turn it into more of an absolute magnitude from 1-127 in either direction  
   // weird shit happens if LateralMappedPulse = 127 but thats ok because it triggers (Motivation < 20) in the next step and gets labeled stationary
-  LateralMotivation = (abs(LateralMappedPulse - 127) * 2) - 1;
+  LateralMotivation = ((abs(LateralMappedPulse - 127)) * 2) - 1;
   ThrottleMotivation = (abs(ThrottleMappedPulse - 127) * 2) - 1;
 
   // determine direction of lateral and throttle based on whether the mapped pulse is big, and if so whether its greater than or less than 127
   // there is a 'dead zone' here of 20 motivation in either direction that lets the robot stay stationary when the joystick is basically near the center. 
   // we may want to adjust this later depending on how responsive this feels.-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  if (LateralMotivation < 20){
+  if (LateralMotivation < 20) {
     LateralInterpretedState = STATIONARY;
-  } else {
-    if ((LateralMappedPulse > 127) {
-      LateralInterpretedState = FORWARDS;
-    }
-    if ((LateralMappedPulse < 127) {
-      LateralInterpretedState = BACKWARDS;
-    }
-  };
+  } else if (LateralMappedPulse > 127) {
+    LateralInterpretedState = RIGHT;
+  } else if (LateralMappedPulse < 127) {
+    LateralInterpretedState = LEFT;
+  }
 
-  if (ThrottleMotivation < 20){
+  if (ThrottleMotivation < 20) {
     ThrottleInterpretedState = STATIONARY;
-  } else {
-    if ((ThrottleMappedPulse > 127) {
-      ThrottleInterpretedState = FORWARDS;
-    }
-    if ((ThrottleMappedPulse < 127) {
-      ThrottleInterpretedState = BACKWARDS;
-    }
-  };
+  } else if (ThrottleMappedPulse > 127) {
+    ThrottleInterpretedState = BACKWARDS;
+  } else if (ThrottleMappedPulse < 127) {
+    ThrottleInterpretedState = FORWARDS;
+  }
   
 
   // Determine Robot State -- decide whether 'turning' or 'forwards/backwards' wins
@@ -168,7 +159,7 @@ void loop() {
     digitalWrite(IN2_Pin, LOW);
     digitalWrite(IN3_Pin, LOW);
     digitalWrite(IN4_Pin, HIGH);
-  } else if (RobotState == RIGHT) {;
+  } else if (RobotState == RIGHT) {
     // do motor right stuff with the hbridge
     analogWrite(ENA_L_Pin, LateralMotivation);
     analogWrite(ENA_R_Pin, LateralMotivation);
@@ -182,18 +173,35 @@ void loop() {
     digitalWrite(IN2_Pin, LOW);
     digitalWrite(IN3_Pin, LOW);
     digitalWrite(IN4_Pin, LOW);
-  }
+  };
 
   // serial.print step for debugging and graphing
-  Serial.print("lateral_motivation:");
-  Serial.print(LateralMotivation);
-  Serial.print(",");
-  Serial.print("throttle_motivation:");
-  Serial.print(ThrottleMotivation);
-  Serial.print(",");
-  Serial.print("robot_state:");
-  Serial.print(RobotState);
-  Serial.print(",");
+  Serial.print("RUNNING. ");
+  if (DEBUG_MODE == GRAPH) {
+    Serial.print("LateralMappedPulse:");
+    Serial.print(LateralMappedPulse);
+    Serial.print(",");
+    Serial.print("ThrottleMappedPulse:");
+    Serial.print(ThrottleMappedPulse);
+    Serial.print(",");
+    Serial.print("lateral_motivation:");
+    Serial.print(LateralMotivation);
+    Serial.print(",");
+    Serial.print("throttle_motivation:");
+    Serial.print(ThrottleMotivation);
+    Serial.print(",");
+    Serial.print("robot_state:");
+    Serial.print(RobotState);
+    Serial.print(",");
+  } else if (DEBUG_MODE == PRINT_STATE) {
+    Serial.print("Robot State: ");
+    if (RobotState == FORWARDS) {Serial.print("FORWARDS");
+    } else if (RobotState == BACKWARDS) {Serial.print("BACKWARDS");
+    } else if (RobotState == LEFT) {Serial.print("LEFT");
+    } else if (RobotState == RIGHT) {Serial.print("RIGHT");
+    } else if (RobotState == STATIONARY) {Serial.print("STATIONARY");
+    }
+  }
 
   Serial.println("");
   
