@@ -1,7 +1,8 @@
 #define NONE 0
 #define GRAPH 1
 #define PRINT_STATE 2
-const int DEBUG_MODE = PRINT_STATE;
+#define PINS 3
+const int DEBUG_MODE = GRAPH;
 
 // these should match the pins the Lateral and throttle are connected to from the RC Reciever.
 const int LateralPin = 10;
@@ -26,7 +27,7 @@ int LateralMappedPulse;
 // determine the total strength of the PWM signals
 int ThrottleMotivation = 0;
 int LateralMotivation = 0;
-
+int Speed = 0;
 
 // these variables will change depending on the forwards-backwards / left-right direction of the command
 int ThrottleInterpretedState;
@@ -128,41 +129,44 @@ void loop() {
 
   if (ThrottleMotivation > LateralMotivation) {
     RobotState = ThrottleInterpretedState;
+    Speed = ThrottleMotivation;
   } else if (LateralMotivation > ThrottleMotivation) { 
     RobotState = LateralInterpretedState;
+    Speed = LateralMotivation;
   } else {
     RobotState = STATIONARY; 
+    Speed = 0;
   }
 
   // Determine Motor State based on Robot State
-  if (RobotState == FORWARDS) {
+  if (RobotState == LEFT) {
     // do motor forwards stuff with the hbridge
-    analogWrite(ENA_L_Pin, ThrottleMotivation);
-    analogWrite(ENA_R_Pin, ThrottleMotivation);
+    analogWrite(ENA_L_Pin, Speed);
+    analogWrite(ENA_R_Pin, Speed);
     digitalWrite(IN1_Pin, HIGH);
     digitalWrite(IN2_Pin, LOW);
     digitalWrite(IN3_Pin, HIGH);
     digitalWrite(IN4_Pin, LOW);
-  } else if (RobotState == BACKWARDS) {
+  } else if (RobotState == RIGHT) {
     // do motor backwards stuff with the hbridge
-    analogWrite(ENA_L_Pin, ThrottleMotivation);
-    analogWrite(ENA_R_Pin, ThrottleMotivation);
+    analogWrite(ENA_L_Pin, Speed);
+    analogWrite(ENA_R_Pin, Speed);
     digitalWrite(IN1_Pin, LOW);
     digitalWrite(IN2_Pin, HIGH);
     digitalWrite(IN3_Pin, LOW);
     digitalWrite(IN4_Pin, HIGH);
-  } else if (RobotState == LEFT) {
+  } else if (RobotState == BACKWARDS) {
     // do motor left stuff with the hbridge
-    analogWrite(ENA_L_Pin, LateralMotivation);
-    analogWrite(ENA_R_Pin, LateralMotivation);
+    analogWrite(ENA_L_Pin, Speed);
+    analogWrite(ENA_R_Pin, Speed);
     digitalWrite(IN1_Pin, HIGH);
     digitalWrite(IN2_Pin, LOW);
     digitalWrite(IN3_Pin, LOW);
     digitalWrite(IN4_Pin, HIGH);
-  } else if (RobotState == RIGHT) {
+  } else if (RobotState == FORWARDS) {
     // do motor right stuff with the hbridge
-    analogWrite(ENA_L_Pin, LateralMotivation);
-    analogWrite(ENA_R_Pin, LateralMotivation);
+    analogWrite(ENA_L_Pin, Speed);
+    analogWrite(ENA_R_Pin, Speed);
     digitalWrite(IN1_Pin, LOW);
     digitalWrite(IN2_Pin, HIGH);
     digitalWrite(IN3_Pin, HIGH);
@@ -176,7 +180,6 @@ void loop() {
   };
 
   // serial.print step for debugging and graphing
-  Serial.print("RUNNING. ");
   if (DEBUG_MODE == GRAPH) {
     Serial.print("LateralMappedPulse:");
     Serial.print(LateralMappedPulse);
@@ -193,6 +196,7 @@ void loop() {
     Serial.print("robot_state:");
     Serial.print(RobotState);
     Serial.print(",");
+    Serial.println("");
   } else if (DEBUG_MODE == PRINT_STATE) {
     Serial.print("Robot State: ");
     if (RobotState == FORWARDS) {Serial.print("FORWARDS");
@@ -201,8 +205,20 @@ void loop() {
     } else if (RobotState == RIGHT) {Serial.print("RIGHT");
     } else if (RobotState == STATIONARY) {Serial.print("STATIONARY");
     }
+    Serial.println("");
+  }  else if (DEBUG_MODE == PINS) {
+    Serial.print("PINS: ");
+    Serial.print("ENA:");
+    Serial.print(Speed);
+    Serial.print("IN1:");
+    Serial.print(digitalRead(IN1_Pin));
+    Serial.print("IN2:");
+    Serial.print(digitalRead(IN2_Pin));
+    Serial.print("IN3:");
+    Serial.print(digitalRead(IN3_Pin));
+    Serial.print("IN4:");
+    Serial.print(digitalRead(IN4_Pin));
+    Serial.println("");
   }
-
-  Serial.println("");
-  
+  delay(100);
 }
