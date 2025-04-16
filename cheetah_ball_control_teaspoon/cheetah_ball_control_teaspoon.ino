@@ -3,7 +3,7 @@
 #define PRINT_STATE 2
 #define PINS 3
 #define SIGNAL 4
-const int DEBUG_MODE = GRAPH;
+const int DEBUG_MODE = SIGNAL;
 
 // these should match the pins the Lateral and throttle are connected to from the RC Reciever.
 const int LateralPin = 10;
@@ -92,7 +92,7 @@ void loop() {
   unsigned long newLateralPulse = pulseIn(LateralPin, HIGH);
   unsigned long newThrottlePulse = pulseIn(ThrottlePin, HIGH);
 
-  if (newLateralPulse < Lateral_Duration_Max && newLateralPulse > Lateral_Duration_Max)
+  if (newLateralPulse < Lateral_Duration_Max && newLateralPulse > Lateral_Duration_Min)
     LateralPulse = newLateralPulse;
   if (newThrottlePulse < Throttle_Duration_Max && newThrottlePulse > Throttle_Duration_Min)
     ThrottlePulse = newThrottlePulse;
