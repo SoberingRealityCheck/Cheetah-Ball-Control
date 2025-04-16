@@ -2,6 +2,7 @@
 #define GRAPH 1
 #define PRINT_STATE 2
 #define PINS 3
+#define SIGNAL 4
 const int DEBUG_MODE = GRAPH;
 
 // these should match the pins the Lateral and throttle are connected to from the RC Reciever.
@@ -91,9 +92,9 @@ void loop() {
   unsigned long newLateralPulse = pulseIn(LateralPin, HIGH);
   unsigned long newThrottlePulse = pulseIn(ThrottlePin, HIGH);
 
-  if (newLateralPulse < 2100 && newLateralPulse > 600)
+  if (newLateralPulse < Lateral_Duration_Max && newLateralPulse > Lateral_Duration_Max)
     LateralPulse = newLateralPulse;
-  if (newThrottlePulse < 2100 && newThrottlePulse > 600)
+  if (newThrottlePulse < Throttle_Duration_Max && newThrottlePulse > Throttle_Duration_Min)
     ThrottlePulse = newThrottlePulse;
 
   // map those pulse widths to a scale from 0-255 to determine the LED brightness
@@ -218,6 +219,17 @@ void loop() {
     Serial.print(digitalRead(IN3_Pin));
     Serial.print("IN4:");
     Serial.print(digitalRead(IN4_Pin));
+    Serial.println("");
+  } else if (DEBUG_MODE == SIGNAL) {
+    Serial.print("SIGNAL STATE: ");
+    Serial.print("LateralPulse:");
+    Serial.print(LateralPulse);
+    Serial.print("newLateralPulse:");
+    Serial.print(newLateralPulse);
+    Serial.print("LateralMappedPulse:");
+    Serial.print(LateralMappedPulse);
+    Serial.print("LateralMotivation:");
+    Serial.print(LateralMotivation);
     Serial.println("");
   }
   delay(100);
