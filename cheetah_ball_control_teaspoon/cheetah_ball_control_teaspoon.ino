@@ -3,7 +3,7 @@
 #define PRINT_STATE 2
 #define PINS 3
 #define SIGNAL 4
-const int DEBUG_MODE = SIGNAL;
+const int DEBUG_MODE = PINS;
 
 // these should match the pins the Lateral and throttle are connected to from the RC Reciever.
 const int LateralPin = 10;
@@ -73,10 +73,9 @@ void setup() {
 }
 
 
-byte GetPWM(byte pin)
-{
+byte GetPWM(byte pin) {
   unsigned long highTime = pulseIn(pin, HIGH, 21000UL);  // 21 millisecond timeout
-  unsigned long lowTime = pulseIn(pin, LOW, 21000UL);  // 21 millisecond timeout
+  unsigned long lowTime = pulseIn(pin, LOW, 21000UL);    // 21 millisecond timeout
 
   // pulseIn() returns zero on timeout
   if (highTime == 0 || lowTime == 0)
@@ -101,13 +100,13 @@ void loop() {
   LateralMappedPulse = map(LateralPulse, Lateral_Duration_Min, Lateral_Duration_Max, 0, 255);
   ThrottleMappedPulse = map(ThrottlePulse, Throttle_Duration_Min, Throttle_Duration_Max, 0, 255);
 
-  // turn it into more of an absolute magnitude from 1-127 in either direction  
+  // turn it into more of an absolute magnitude from 1-127 in either direction
   // weird shit happens if LateralMappedPulse = 127 but thats ok because it triggers (Motivation < 20) in the next step and gets labeled stationary
   LateralMotivation = ((abs(LateralMappedPulse - 127)) * 2) - 1;
   ThrottleMotivation = (abs(ThrottleMappedPulse - 127) * 2) - 1;
 
   // determine direction of lateral and throttle based on whether the mapped pulse is big, and if so whether its greater than or less than 127
-  // there is a 'dead zone' here of 20 motivation in either direction that lets the robot stay stationary when the joystick is basically near the center. 
+  // there is a 'dead zone' here of 20 motivation in either direction that lets the robot stay stationary when the joystick is basically near the center.
   // we may want to adjust this later depending on how responsive this feels.-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   if (LateralMotivation < 20) {
     LateralInterpretedState = STATIONARY;
@@ -124,18 +123,18 @@ void loop() {
   } else if (ThrottleMappedPulse < 127) {
     ThrottleInterpretedState = FORWARDS;
   }
-  
+
 
   // Determine Robot State -- decide whether 'turning' or 'forwards/backwards' wins
 
   if (ThrottleMotivation > LateralMotivation) {
     RobotState = ThrottleInterpretedState;
     Speed = ThrottleMotivation;
-  } else if (LateralMotivation > ThrottleMotivation) { 
+  } else if (LateralMotivation > ThrottleMotivation) {
     RobotState = LateralInterpretedState;
     Speed = LateralMotivation;
   } else {
-    RobotState = STATIONARY; 
+    RobotState = STATIONARY;
     Speed = 0;
   }
 
@@ -200,14 +199,19 @@ void loop() {
     Serial.println("");
   } else if (DEBUG_MODE == PRINT_STATE) {
     Serial.print("Robot State: ");
-    if (RobotState == FORWARDS) {Serial.print("FORWARDS");
-    } else if (RobotState == BACKWARDS) {Serial.print("BACKWARDS");
-    } else if (RobotState == LEFT) {Serial.print("LEFT");
-    } else if (RobotState == RIGHT) {Serial.print("RIGHT");
-    } else if (RobotState == STATIONARY) {Serial.print("STATIONARY");
+    if (RobotState == FORWARDS) {
+      Serial.print("FORWARDS");
+    } else if (RobotState == BACKWARDS) {
+      Serial.print("BACKWARDS");
+    } else if (RobotState == LEFT) {
+      Serial.print("LEFT");
+    } else if (RobotState == RIGHT) {
+      Serial.print("RIGHT");
+    } else if (RobotState == STATIONARY) {
+      Serial.print("STATIONARY");
     }
     Serial.println("");
-  }  else if (DEBUG_MODE == PINS) {
+  } else if (DEBUG_MODE == PINS) {
     Serial.print("PINS: ");
     Serial.print("ENA:");
     Serial.print(Speed);
