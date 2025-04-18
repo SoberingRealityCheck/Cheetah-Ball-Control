@@ -1,4 +1,5 @@
 <h1> Cheetah Ball Control </h1>
+
 As the electrical lead on the Rice CACTI Engineering Team, I have been responsible for the electrical design and control software for the Rice CACTI "Teaspoon" Cheetah Ball prototype. This has been a mixed-discipline independent student team working to develop a working cheetah enrichment device for the Houston Zoo. 
 
 
